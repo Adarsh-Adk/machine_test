@@ -137,30 +137,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     backgroundColor:
                         MaterialStatePropertyAll(AppColorScheme.primaryColor)),
                 onPressed: () {
-                  if (_formKey.currentState?.validate() ?? false) {
-                    int rows = int.tryParse(rowController.text) ?? 0;
-                    int columns = int.tryParse(columnsController.text) ?? 0;
-                    String alphabets = alphabetsController.text.trim();
-
-                    if (rows != 0 &&
-                        columns != 0 &&
-                        (alphabets.length == rows * columns)) {
-                      final arg = GameScreenArgs(
-                          row: rows,
-                          columns: columns,
-                          alphabets: alphabets,
-                          totalCount: (rows * columns));
-
-                      Navigator.pushNamed(context, CustomRouter.gameScreen,
-                          arguments: arg);
-                    } else {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text("Fix errors")));
-                    }
-                  } else {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text("Fix errors")));
-                  }
+                  _onPressed(context);
                 },
                 icon: const Icon(Icons.grid_3x3),
                 label: Text(
@@ -176,5 +153,29 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ),
     );
+  }
+
+  void _onPressed(BuildContext context) {
+    if (_formKey.currentState?.validate() ?? false) {
+      int rows = int.tryParse(rowController.text) ?? 0;
+      int columns = int.tryParse(columnsController.text) ?? 0;
+      String alphabets = alphabetsController.text.trim();
+
+      if (rows != 0 && columns != 0 && (alphabets.length == rows * columns)) {
+        final arg = GameScreenArgs(
+            row: rows,
+            columns: columns,
+            alphabets: alphabets,
+            totalCount: (rows * columns));
+
+        Navigator.pushNamed(context, CustomRouter.gameScreen, arguments: arg);
+      } else {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(const SnackBar(content: Text("Fix errors")));
+      }
+    } else {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text("Fix errors")));
+    }
   }
 }

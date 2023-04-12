@@ -14,6 +14,15 @@ class GameLoadingState extends GameState {
   List<Object> get props => [];
 }
 
+class GameFailedState extends GameState {
+  final String error;
+
+  const GameFailedState({required this.error});
+
+  @override
+  List<Object> get props => [error];
+}
+
 class GameLoadedState extends GameState {
   final List<bool> indexList;
   final bool isMatching;

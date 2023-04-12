@@ -19,12 +19,6 @@ class GameScreen extends StatefulWidget {
 class _GameScreenState extends State<GameScreen> {
   final textController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
-  late final sliverGridDelegate = SliverGridDelegateWithFixedCrossAxisCount(
-    mainAxisSpacing: AppConstants.defaultPadding,
-    crossAxisSpacing: AppConstants.defaultPadding,
-    crossAxisCount: widget.args.columns,
-    childAspectRatio: 1,
-  );
 
   @override
   void dispose() {
@@ -78,108 +72,16 @@ class _GameScreenState extends State<GameScreen> {
                       const AppPadding(),
                       const Text("All Directions"),
                       const AppPadding(),
-                      BlocBuilder<GameBloc, GameState>(
-                        builder: (context, state) {
-                          if (state is GameInitialState ||
-                              state is GameLoadingState) {
-                            return Switch(
-                                value: false,
-                                onChanged: (value) {
-                                  BlocProvider.of<GameBloc>(context,
-                                          listen: false)
-                                      .add(
-                                    GameEvent(
-                                        text: BlocProvider.of<GameBloc>(context)
-                                            .text,
-                                        gameScreenArgs: widget.args,
-                                        toggleDirection: true),
-                                  );
-                                });
-                          } else if (state is GameLoadedState) {
-                            return Switch(
-                                value: state.toggleDirection,
-                                activeColor: state.isMatching
-                                    ? AppColorScheme.gridMatchColor
-                                    : AppColorScheme.gridErrorColor,
-                                inactiveThumbColor: state.isMatching
-                                    ? AppColorScheme.gridMatchColor
-                                    : AppColorScheme.gridErrorColor,
-                                onChanged: (value) {
-                                  BlocProvider.of<GameBloc>(context,
-                                          listen: false)
-                                      .add(
-                                    GameEvent(
-                                        text: BlocProvider.of<GameBloc>(context)
-                                            .text,
-                                        gameScreenArgs: widget.args,
-                                        toggleDirection:
-                                            !state.toggleDirection),
-                                  );
-                                });
-                          } else {
-                            return Switch(
-                                value: false,
-                                onChanged: (value) {
-                                  BlocProvider.of<GameBloc>(context,
-                                          listen: false)
-                                      .add(
-                                    GameEvent(
-                                        text: BlocProvider.of<GameBloc>(context)
-                                            .text,
-                                        gameScreenArgs: widget.args,
-                                        toggleDirection: true),
-                                  );
-                                });
-                          }
-                        },
+                      DirectionalSwitch(
+                        args: widget.args,
                       ),
                     ],
                   ),
                   const AppPadding(),
                   const AppPadding(),
-                  GridView.builder(
-                      physics: const NeverScrollableScrollPhysics(),
-                      shrinkWrap: true,
-                      itemCount: widget.args.totalCount,
-                      gridDelegate: sliverGridDelegate,
-                      itemBuilder: (context, index) {
-                        return BlocBuilder<GameBloc, GameState>(
-                          builder: (context, state) {
-                            if (state is GameInitialState ||
-                                state is GameLoadingState) {
-                              return _DefaultContainer(
-                                text: widget.args.alphabets[index],
-                              );
-                            } else if (state is GameLoadedState) {
-                              return Container(
-                                padding: const EdgeInsets.all(
-                                    AppConstants.defaultPadding),
-                                decoration: BoxDecoration(
-                                  color: state.indexList[index]
-                                      ? state.isMatching
-                                          ? AppColorScheme.gridMatchColor
-                                          : AppColorScheme.gridErrorColor
-                                      : AppColorScheme.gridDefaultColor,
-                                  borderRadius: BorderRadius.circular(
-                                      !state.indexList[index]
-                                          ? AppConstants.cornerRadius
-                                          : AppConstants.cornerRadius * 5),
-                                ),
-                                child: Center(
-                                    child: Text(
-                                  widget.args.alphabets[index],
-                                  style:
-                                      Theme.of(context).textTheme.titleMedium,
-                                  textAlign: TextAlign.center,
-                                )),
-                              );
-                            } else {
-                              return _DefaultContainer(
-                                  text: widget.args.alphabets[index]);
-                            }
-                          },
-                        );
-                      })
+                  CellGridBuilder(
+                    args: widget.args,
+                  )
                 ],
               ),
             ),
@@ -187,6 +89,134 @@ class _GameScreenState extends State<GameScreen> {
         );
       }),
     );
+  }
+}
+
+class DirectionalSwitch extends StatelessWidget {
+  const DirectionalSwitch({
+    super.key,
+    required this.args,
+  });
+
+  final GameScreenArgs args;
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<GameBloc, GameState>(
+      builder: (context, state) {
+        if (state is GameInitialState || state is GameLoadingState) {
+          return Switch(
+              value: false,
+              onChanged: (value) {
+                BlocProvider.of<GameBloc>(context, listen: false).add(
+                  GameEvent(
+                      text: BlocProvider.of<GameBloc>(context).text,
+                      gameScreenArgs: args,
+                      toggleDirection: true),
+                );
+              });
+        } else if (state is GameLoadedState) {
+          return Switch(
+              value: state.toggleDirection,
+              activeColor: state.isMatching
+                  ? AppColorScheme.gridMatchColor
+                  : AppColorScheme.gridErrorColor,
+              inactiveThumbColor: state.isMatching
+                  ? AppColorScheme.gridMatchColor
+                  : AppColorScheme.gridErrorColor,
+              onChanged: (value) {
+                BlocProvider.of<GameBloc>(context, listen: false).add(
+                  GameEvent(
+                      text: BlocProvider.of<GameBloc>(context).text,
+                      gameScreenArgs: args,
+                      toggleDirection: !state.toggleDirection),
+                );
+              });
+        } else {
+          return Switch(
+              value: false,
+              onChanged: (value) {
+                BlocProvider.of<GameBloc>(context, listen: false).add(
+                  GameEvent(
+                      text: BlocProvider.of<GameBloc>(context).text,
+                      gameScreenArgs: args,
+                      toggleDirection: true),
+                );
+              });
+        }
+      },
+    );
+  }
+}
+
+class CellGridBuilder extends StatelessWidget {
+  final GameScreenArgs args;
+  CellGridBuilder({
+    super.key,
+    required this.args,
+  });
+
+  late final sliverGridDelegate = SliverGridDelegateWithFixedCrossAxisCount(
+    mainAxisSpacing: AppConstants.defaultPadding,
+    crossAxisSpacing: AppConstants.defaultPadding,
+    crossAxisCount: args.columns,
+    childAspectRatio: 1,
+  );
+
+  @override
+  Widget build(BuildContext context) {
+    return GridView.builder(
+        physics: const NeverScrollableScrollPhysics(),
+        shrinkWrap: true,
+        itemCount: args.totalCount,
+        gridDelegate: sliverGridDelegate,
+        itemBuilder: (context, index) {
+          return BlocConsumer<GameBloc, GameState>(
+            listener: (context, state) {
+              if (state is GameFailedState) {
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                  content: Text(
+                    state.error,
+                    style: Theme.of(context)
+                        .textTheme
+                        .labelMedium
+                        ?.copyWith(color: AppColorScheme.onPrimaryColor),
+                  ),
+                  backgroundColor: AppColorScheme.gridErrorColor,
+                ));
+              }
+            },
+            builder: (context, state) {
+              if (state is GameInitialState || state is GameLoadingState) {
+                return _DefaultContainer(
+                  text: args.alphabets[index],
+                );
+              } else if (state is GameLoadedState) {
+                return Container(
+                  padding: const EdgeInsets.all(AppConstants.defaultPadding),
+                  decoration: BoxDecoration(
+                    color: state.indexList[index]
+                        ? state.isMatching
+                            ? AppColorScheme.gridMatchColor
+                            : AppColorScheme.gridErrorColor
+                        : AppColorScheme.gridDefaultColor,
+                    borderRadius: BorderRadius.circular(!state.indexList[index]
+                        ? AppConstants.cornerRadius
+                        : AppConstants.cornerRadius * 5),
+                  ),
+                  child: Center(
+                      child: Text(
+                    args.alphabets[index],
+                    style: Theme.of(context).textTheme.titleMedium,
+                    textAlign: TextAlign.center,
+                  )),
+                );
+              } else {
+                return _DefaultContainer(text: args.alphabets[index]);
+              }
+            },
+          );
+        });
   }
 }
 
