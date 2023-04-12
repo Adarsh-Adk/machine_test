@@ -27,14 +27,14 @@ class GameBloc extends Bloc<GameEvent, GameState> {
       List<List<bool>> selected = [];
       List<bool> indexBoolList = [];
 
-      int i = 0;
-      while (i < alphabetsList.length) {
+      int alpha = 0;
+      while (alpha < alphabetsList.length) {
         List<bool> innerSelected = [];
         List<String> innerRow = [];
-        for (int j = 0; j < column && i < alphabetsList.length; j++) {
-          innerRow.add(alphabetsList[i]);
+        for (int j = 0; j < column && alpha < alphabetsList.length; j++) {
+          innerRow.add(alphabetsList[alpha]);
           innerSelected.add(false);
-          i++;
+          alpha++;
         }
         selected.add(innerSelected);
         grid.add(innerRow);
@@ -44,10 +44,10 @@ class GameBloc extends Bloc<GameEvent, GameState> {
 
       for (int row = 0; row < grid.length; row++) {
         String rowString = grid[row].reversed.join('');
-        if (rowString.contains(event.text)) {
+        if (rowString.contains(event.text) && event.text.length > 1) {
           int startIndex = rowString.indexOf(event.text);
           for (int i = startIndex; i < startIndex + event.text.length; i++) {
-            selected[row][rows - 1 - i] = true;
+            selected[row][column - 1 - i] = true;
           }
           if (event.toggleDirection) {
             searchResult = true;
@@ -61,13 +61,16 @@ class GameBloc extends Bloc<GameEvent, GameState> {
 
       for (int col = column - 1; col >= 0; col--) {
         String colString = '';
+
         for (int row = grid.length - 1; row >= 0; row--) {
           colString += grid[row][col];
         }
+
         if (colString.contains(event.text)) {
           int startIndex = colString.indexOf(event.text);
+
           for (int i = startIndex; i < startIndex + event.text.length; i++) {
-            selected[column - i - 1][col] = true;
+            selected[rows - i - 1][col] = true;
           }
           if (event.toggleDirection) {
             searchResult = true;

@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:machine_test/custom_router.dart';
 import 'package:machine_test/model/constants/app_color_scheme.dart';
@@ -20,6 +18,14 @@ class _HomeScreenState extends State<HomeScreen> {
   final columnsController = TextEditingController();
   final alphabetsController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
+
+  // @override
+  // void initState() {
+  //   // rowController.text = "4";
+  //   // columnsController.text = "3";
+  //   // alphabetsController.text = "abcdefghijkl";
+  //   super.initState();
+  // }
 
   @override
   void dispose() {
@@ -115,11 +121,10 @@ class _HomeScreenState extends State<HomeScreen> {
                   int rows = int.tryParse(rowController.text) ?? 0;
                   int columns = int.tryParse(columnsController.text) ?? 0;
                   String val = value?.trim() ?? "";
-                  log("${val.length} val");
                   if (val.length == (rows * columns)) {
                     return null;
                   } else {
-                    return "only ${(rows * columns)} characters required";
+                    return "${(rows * columns)} characters required";
                   }
                 },
                 onChanged: (value) => _formKey.currentState?.validate(),
