@@ -22,14 +22,6 @@ class _HomeScreenState extends State<HomeScreen> {
   final _formKey = GlobalKey<FormState>();
 
   @override
-  void initState() {
-    rowController.text = "4";
-    columnsController.text = "4";
-    alphabetsController.text = "abcdefghijklmnop";
-    super.initState();
-  }
-
-  @override
   void dispose() {
     rowController.dispose();
     columnsController.dispose();
