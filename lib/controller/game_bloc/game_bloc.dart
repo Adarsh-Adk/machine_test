@@ -6,14 +6,21 @@ part 'game_event.dart';
 part 'game_state.dart';
 
 class GameBloc extends Bloc<GameEvent, GameState> {
+  String _text = "";
+  String get text => _text;
+
+  bool _toggle = false;
+  bool get toggle => _toggle;
+
   GameBloc() : super(GameInitialState()) {
     on<GameEvent>((event, emit) {
+      _text = event.text;
+      _toggle = event.toggleDirection;
       emit(GameLoadingState());
       int rows = event.gameScreenArgs.row;
       int column = event.gameScreenArgs.columns;
-      int totalCount = event.gameScreenArgs.totalCount;
       bool searchResult = false;
-      List<String> firstList = List.generate(
+      List<String> alphabetsList = List.generate(
           event.gameScreenArgs.alphabets.length,
           (index) => event.gameScreenArgs.alphabets[index]);
       List<List<String>> grid = [];
@@ -21,11 +28,11 @@ class GameBloc extends Bloc<GameEvent, GameState> {
       List<bool> indexBoolList = [];
 
       int i = 0;
-      while (i < firstList.length) {
+      while (i < alphabetsList.length) {
         List<bool> innerSelected = [];
         List<String> innerRow = [];
-        for (int j = 0; j < column && i < firstList.length; j++) {
-          innerRow.add(firstList[i]);
+        for (int j = 0; j < column && i < alphabetsList.length; j++) {
+          innerRow.add(alphabetsList[i]);
           innerSelected.add(false);
           i++;
         }
@@ -33,7 +40,59 @@ class GameBloc extends Bloc<GameEvent, GameState> {
         grid.add(innerRow);
       }
 
-      // Search horizontally
+      // Search horizontally from RTL
+
+      for (int row = 0; row < grid.length; row++) {
+        String rowString = grid[row].reversed.join('');
+        if (rowString.contains(event.text)) {
+          int startIndex = rowString.indexOf(event.text);
+          for (int i = startIndex; i < startIndex + event.text.length; i++) {
+            selected[row][rows - 1 - i] = true;
+          }
+          if (event.toggleDirection) {
+            searchResult = true;
+          } else {
+            searchResult = false;
+          }
+        }
+      }
+
+      //search vertically from BTT
+
+      for (int col = column - 1; col >= 0; col--) {
+        String colString = '';
+        for (int row = grid.length - 1; row >= 0; row--) {
+          colString += grid[row][col];
+        }
+        if (colString.contains(event.text)) {
+          int startIndex = colString.indexOf(event.text);
+          for (int i = startIndex; i < startIndex + event.text.length; i++) {
+            selected[column - i - 1][col] = true;
+          }
+          if (event.toggleDirection) {
+            searchResult = true;
+          } else {
+            searchResult = false;
+          }
+        }
+      }
+
+      //search diagonally from TRTBL
+      if (rows == column) {
+        String diaString = '';
+        for (int input = 0; input <= (rows - 1); input++) {
+          diaString += grid[input][(rows - 1) - input];
+        }
+        if (diaString.contains(event.text)) {
+          int startIndex = diaString.indexOf(event.text);
+          for (int j = startIndex; j < startIndex + event.text.length; j++) {
+            selected[j][rows - 1 - j] = true;
+          }
+          searchResult = true;
+        }
+      }
+
+      // Search horizontally from LTR
       for (int row = 0; row < grid.length; row++) {
         String rowString = grid[row].join('');
         if (rowString.contains(event.text)) {
@@ -44,7 +103,8 @@ class GameBloc extends Bloc<GameEvent, GameState> {
           searchResult = true;
         }
       }
-      // Search vertically
+
+      // Search vertically from TTB
       for (int col = 0; col < grid[0].length; col++) {
         String colString = '';
         for (int row = 0; row < grid.length; row++) {
@@ -58,18 +118,6 @@ class GameBloc extends Bloc<GameEvent, GameState> {
           searchResult = true;
         }
       }
-      //search diagonally
-      if (rows == column) {
-        String diaString = '';
-        for (int input = 0; input <= (rows - 1); input++) {
-          diaString += grid[input][(rows - 1) - input];
-        }
-        if (diaString.contains(event.text)) {
-          for (int j = 0; j < event.text.length; j++) {
-            selected[j][rows - 1 - j] = true;
-          }
-        }
-      }
 
       for (int i = 0; i < selected.length; i++) {
         for (int j = 0; j < selected[i].length; j++) {
@@ -77,7 +125,10 @@ class GameBloc extends Bloc<GameEvent, GameState> {
         }
       }
 
-      emit(GameLoadedState(indexList: indexBoolList, isMatching: searchResult));
+      emit(GameLoadedState(
+          indexList: indexBoolList,
+          isMatching: searchResult,
+          toggleDirection: event.toggleDirection));
     });
   }
 }

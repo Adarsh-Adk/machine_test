@@ -62,11 +62,80 @@ class _GameScreenState extends State<GameScreen> {
                           CustomDecoration.inputDecoration(label: "PlayText"),
                       onChanged: (value) {
                         BlocProvider.of<GameBloc>(context, listen: false).add(
-                          GameEvent(text: value, gameScreenArgs: widget.args),
+                          GameEvent(
+                              text: value,
+                              gameScreenArgs: widget.args,
+                              toggleDirection:
+                                  BlocProvider.of<GameBloc>(context).toggle),
                         );
                       },
                     ),
                   ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      const Icon(Icons.add_box_outlined),
+                      const AppPadding(),
+                      const Text("All Directions"),
+                      const AppPadding(),
+                      BlocBuilder<GameBloc, GameState>(
+                        builder: (context, state) {
+                          if (state is GameInitialState ||
+                              state is GameLoadingState) {
+                            return Switch(
+                                value: false,
+                                onChanged: (value) {
+                                  BlocProvider.of<GameBloc>(context,
+                                          listen: false)
+                                      .add(
+                                    GameEvent(
+                                        text: BlocProvider.of<GameBloc>(context)
+                                            .text,
+                                        gameScreenArgs: widget.args,
+                                        toggleDirection: true),
+                                  );
+                                });
+                          } else if (state is GameLoadedState) {
+                            return Switch(
+                                value: state.toggleDirection,
+                                activeColor: state.isMatching
+                                    ? AppColorScheme.gridMatchColor
+                                    : AppColorScheme.gridErrorColor,
+                                inactiveThumbColor: state.isMatching
+                                    ? AppColorScheme.gridMatchColor
+                                    : AppColorScheme.gridErrorColor,
+                                onChanged: (value) {
+                                  BlocProvider.of<GameBloc>(context,
+                                          listen: false)
+                                      .add(
+                                    GameEvent(
+                                        text: BlocProvider.of<GameBloc>(context)
+                                            .text,
+                                        gameScreenArgs: widget.args,
+                                        toggleDirection:
+                                            !state.toggleDirection),
+                                  );
+                                });
+                          } else {
+                            return Switch(
+                                value: false,
+                                onChanged: (value) {
+                                  BlocProvider.of<GameBloc>(context,
+                                          listen: false)
+                                      .add(
+                                    GameEvent(
+                                        text: BlocProvider.of<GameBloc>(context)
+                                            .text,
+                                        gameScreenArgs: widget.args,
+                                        toggleDirection: true),
+                                  );
+                                });
+                          }
+                        },
+                      ),
+                    ],
+                  ),
+                  const AppPadding(),
                   const AppPadding(),
                   GridView.builder(
                       physics: const NeverScrollableScrollPhysics(),
@@ -87,7 +156,9 @@ class _GameScreenState extends State<GameScreen> {
                                     AppConstants.defaultPadding),
                                 decoration: BoxDecoration(
                                   color: state.indexList[index]
-                                      ? AppColorScheme.gridMatchColor
+                                      ? state.isMatching
+                                          ? AppColorScheme.gridMatchColor
+                                          : AppColorScheme.gridErrorColor
                                       : AppColorScheme.gridDefaultColor,
                                   borderRadius: BorderRadius.circular(
                                       !state.indexList[index]

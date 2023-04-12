@@ -17,8 +17,12 @@ class GameLoadingState extends GameState {
 class GameLoadedState extends GameState {
   final List<bool> indexList;
   final bool isMatching;
+  final bool toggleDirection;
 
-  const GameLoadedState({required this.indexList, required this.isMatching});
+  const GameLoadedState(
+      {required this.indexList,
+      required this.isMatching,
+      required this.toggleDirection});
   @override
-  List<Object> get props => [indexList, isMatching];
+  List<Object> get props => [indexList, isMatching, toggleDirection];
 }
